@@ -1,116 +1,122 @@
-    /* Fundo com imagem do hospital */
-    body {
-        background-image: url('https://www.eretz.bio/wp-content/uploads/2024/12/Screen-Shot-2024-12-11-at-17.43.45-3.png');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        position: relative;
-        min-height: 100vh;
-        color: white;
-        margin: 0;
-        overflow-x: hidden;
-    }
+/* ============ VARIÁVEIS ============ */
+:root {
+    --primary: #0d6efd;
+    --success: #198754;
+    --info: #0dcaf0;
+    --dark: #343a40;
+    --overlay: rgba(0, 0, 0, 0.5);
+}
 
-    /* Overlay para escurecer a imagem de fundo */
-    .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5); /* Escurece o fundo */
-        backdrop-filter: blur(8px);     /* Aplica o desfoque */
-        z-index: -1; /* Coloca a overlay atrás do conteúdo */
-        pointer-events: none; /* Não permite interação com o fundo */
-    }
+/* ============ FUNDO PRINCIPAL ============ */
+body {
+    background: url('https://www.eretz.bio/wp-content/uploads/2024/12/Screen-Shot-2024-12-11-at-17.43.45-3.png') center/cover fixed;
+    color: white;
+    min-height: 100vh;
+    position: relative;
+    margin: 0;
+    overflow-x: hidden;
+}
 
+/* ============ OVERLAY ============ */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--overlay);
+    backdrop-filter: blur(8px);
+    z-index: -1;
+    pointer-events: none;
+}
 
-    /* Garante que o conteúdo fique acima do overlay */
-    .container, header, main, footer, .content {
-        position: relative;
-        z-index: 1;
-    }
-    /* Estilos visuais */
+/* ============ ESTRUTURA ============ */
+.container, header, main, footer, .content {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============ COMPONENTES ============ */
+/* Ícones */
+.feature-icon {
+    width: 4rem;
+    height: 4rem;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Cards */
+.card-hover {
+    transition: all 0.3s ease;
+}
+.card-hover:hover {
+    transform: translateY(-5px);
+    background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Rodapé fixo */
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: var(--dark);
+    color: white;
+    padding: 20px 0;
+}
+
+/* ============ TEMAS ============ */
+/* Pacientes */
+.navbar-pacientes,
+.list-group-item-pacientes,
+.card-header-pacientes {
+    background-color: var(--primary) !important;
+    color: white !important;
+}
+
+/* Médicos */
+.navbar-medicos,
+.list-group-item-medicos,
+.card-header-medicos {
+    background-color: var(--success) !important;
+    color: white !important;
+}
+
+/* Consultas */
+.navbar-consultas,
+.list-group-item-consultas,
+.card-header-consultas {
+    background-color: var(--info) !important;
+    color: white !important;
+}
+
+/* Home */
+.navbar-home {
+    background-color: var(--success) !important;
+}
+
+/* ============ ELEMENTOS DE NAVEGAÇÃO ============ */
+.nav-link.active {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+/* ============ AJUSTES RESPONSIVOS ============ */
+@media (max-width: 768px) {
     .feature-icon {
-        width: 4rem;
-        height: 4rem;
-        font-size: 2rem;
+        width: 3rem;
+        height: 3rem;
+        font-size: 1.5rem;
     }
 
-    .card-hover {
-        transition: transform 0.3s ease, background-color 0.3s ease;
-    }
-
-    .card-hover:hover {
-        transform: translateY(-5px);
-        background-color: rgba(0, 0, 0, 0.3);
-    }
-
-    /* Rodapé */
     footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: #343a40;
-        color: white;
-        padding: 20px 0;
+        position: static;
+        text-align: center;
     }
 
-    /* Cores temáticas */
-    .navbar-pacientes, .list-group-item-pacientes {
-        background-color: #0d6efd !important;
+    body {
+        background-attachment: scroll;
+        padding-bottom: 0;
     }
-
-    .navbar-medicos, .list-group-item-medicos {
-        background-color: #198754 !important;
-    }
-
-    .navbar-consultas, .list-group-item-consultas {
-        background-color: #0dcaf0 !important;
-    }
-
-    .navbar-home {
-        background-color: #198754 !important;
-    }
-
-    /* Cores dos cards */
-    .card-header-pacientes {
-        background-color: #0d6efd !important;
-        color: white !important;
-    }
-
-    .card-header-medicos {
-        background-color: #198754 !important;
-        color: white !important;
-    }
-
-    .card-header-consultas {
-        background-color: #0dcaf0 !important;
-        color: white !important;
-    }
-
-    /* Listas */
-    .list-group-item-pacientes,
-    .list-group-item-medicos,
-    .list-group-item-consultas {
-        color: white;
-    }
-
-    .list-group-item-pacientes {
-        background-color: #0d6efd !important;
-    }
-
-    .list-group-item-medicos {
-        background-color: #198754 !important;
-    }
-
-    .list-group-item-consultas {
-        background-color: #0dcaf0 !important;
-    }
-
-    /* Links ativos */
-    .nav-link.active {
-        font-weight: bold;
-        text-decoration: underline;
-    }
+}

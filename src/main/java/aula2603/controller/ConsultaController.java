@@ -12,44 +12,44 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-
 @Controller
 @RequestMapping("/consultas")
 public class ConsultaController {
 
     @Autowired
     private ConsultaRepository consultaRepository;
-
     @Autowired
     private PacienteRepository pacienteRepository;
-
     @Autowired
     private MedicoRepository medicoRepository;
 
     @GetMapping
     public String listar(Model model) {
-        // Garanta que está retornando a lista de consultas diretamente
         model.addAttribute("consultas", consultaRepository.findAllWithPacienteAndMedico());
-        return "consulta/list"; // Verifique se este é o caminho correto do template
+        return "consulta/list";
     }
 
     @GetMapping("/nova")
-    public String novoForm(Model model) {
-        prepararForm(model, new Consulta());
-        return "consulta/form";
-    }
+    public String novo(@RequestParam(required = false) Long pacienteId,
+            @RequestParam(required = false) Long medicoId,
+            Model model) {
 
-    // Formulário pré-preenchido para paciente específico
-    @GetMapping("/nova/{id}")
-    public String novoFormComPaciente(@PathVariable Long id, Model model) {
         Consulta consulta = new Consulta();
-        consulta.setPaciente(pacienteRepository.findById(id).orElseThrow());
+
+        if (pacienteId != null) {
+            consulta.setPaciente(pacienteRepository.findById(pacienteId)
+                    .orElseThrow(() -> new IllegalArgumentException("Paciente não encontrado")));
+        }
+
+        if (medicoId != null) {
+            consulta.setMedico(medicoRepository.findById(medicoId)
+                    .orElseThrow(() -> new IllegalArgumentException("Médico não encontrado")));
+        }
+
         prepararForm(model, consulta);
         return "consulta/form";
     }
 
-    // Método auxiliar para evitar duplicação
     private void prepararForm(Model model, Consulta consulta) {
         model.addAttribute("consulta", consulta);
         model.addAttribute("pacientes", pacienteRepository.findAll());
@@ -57,103 +57,57 @@ public class ConsultaController {
     }
 
     @PostMapping("/salvar")
-    public String salvar(@ModelAttribute Consulta consulta,
+    public String salvar(Consulta consulta,
                          @RequestParam Long pacienteId,
                          @RequestParam Long medicoId,
-                         RedirectAttributes redirectAttributes) {
+                         RedirectAttributes redirect) {
 
-        try {
-            Paciente paciente = pacienteRepository.findById(pacienteId)
-                    .orElseThrow(() -> new IllegalArgumentException("Paciente não encontrado"));
-            Medico medico = medicoRepository.findById(medicoId)
-                    .orElseThrow(() -> new IllegalArgumentException("Médico não encontrado"));
+        consulta.setPaciente(pacienteRepository.findById(pacienteId).orElseThrow());
+        consulta.setMedico(medicoRepository.findById(medicoId).orElseThrow());
 
-            consulta.setPaciente(paciente);
-            consulta.setMedico(medico);
-            consultaRepository.save(consulta);
-
-            redirectAttributes.addFlashAttribute("success", "Consulta agendada com sucesso");
-            return "redirect:/pacientes/consultas/" + pacienteId;
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erro ao agendar consulta: " + e.getMessage());
-            return "redirect:/consultas/nova";
-        }
+        consultaRepository.save(consulta);
+        redirect.addFlashAttribute("success", "Consulta agendada com sucesso");
+        return "redirect:/consultas";
     }
 
     @GetMapping("/editar/{id}")
     public String editar(@PathVariable Long id, Model model) {
-        // Buscar consulta pelo ID
-        Consulta consulta = consultaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Consulta não encontrada para o ID: " + id));
-
-        // Passar dados para o modelo
-        model.addAttribute("consulta", consulta); // A consulta com os dados atuais
-        model.addAttribute("pacientes", pacienteRepository.findAll()); // Lista de pacientes (para manter a seleção)
-        model.addAttribute("medicos", medicoRepository.findAllByOrderByNomeAsc()); // Lista de médicos
-
-        // Adicionar paciente e médico atuais ao modelo
-        model.addAttribute("pacienteId", consulta.getPaciente().getId());
-        model.addAttribute("medicoId", consulta.getMedico().getId());
-
-        // Retornar para o formulário de edição
+        model.addAttribute(consultaRepository.findByIdWithPacienteAndMedico(id).orElseThrow());
+        model.addAttribute("pacientes", pacienteRepository.findAll());
+        model.addAttribute("medicos", medicoRepository.findAllByOrderByNomeAsc());
         return "consulta/editar";
     }
 
     @PostMapping("/atualizar/{id}")
-    public String atualizar(@PathVariable Long id,
-                            @ModelAttribute Consulta consultaAtualizada,
+    public String atualizar(@PathVariable Long id, Consulta consulta,
                             @RequestParam Long pacienteId,
                             @RequestParam Long medicoId,
-                            RedirectAttributes redirectAttributes) {
+                            RedirectAttributes redirect) {
 
-        try {
-            Consulta consultaExistente = consultaRepository.findByIdWithPacienteAndMedico(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Consulta não encontrada"));
-            // Atualizar campos básicos
-            consultaExistente.setData(consultaAtualizada.getData());
-            consultaExistente.setValor(consultaAtualizada.getValor());
-            consultaExistente.setObservacao(consultaAtualizada.getObservacao());
-            // Verificar se houve mudança de paciente
-            if (!consultaExistente.getPaciente().getId().equals(pacienteId)) {
-                Paciente paciente = pacienteRepository.findById(pacienteId)
-                        .orElseThrow(() -> new IllegalArgumentException("Paciente não encontrado"));
-                consultaExistente.setPaciente(paciente);
-            }
-            // Verificar se houve mudança de médico
-            if (!consultaExistente.getMedico().getId().equals(medicoId)) {
-                Medico medico = medicoRepository.findById(medicoId)
-                        .orElseThrow(() -> new IllegalArgumentException("Médico não encontrado"));
-                consultaExistente.setMedico(medico);
-            }
-            // Salvar consulta atualizada
-            consultaRepository.save(consultaExistente);
+        Consulta existente = consultaRepository.findById(id).orElseThrow();
+        existente.setData(consulta.getData());
+        existente.setValor(consulta.getValor());
+        existente.setObservacao(consulta.getObservacao());
+        existente.setPaciente(pacienteRepository.findById(pacienteId).orElseThrow());
+        existente.setMedico(medicoRepository.findById(medicoId).orElseThrow());
 
-            redirectAttributes.addFlashAttribute("success", "Consulta atualizada com sucesso");
-            return "redirect:/pacientes/consultas/" + consultaExistente.getPaciente().getId();
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erro ao atualizar consulta: " + e.getMessage());
-            return "redirect:/consultas/editar/" + id;
-        }
+        consultaRepository.save(existente);
+        redirect.addFlashAttribute("success", "Consulta atualizada com sucesso");
+        return "redirect:/consultas";
     }
 
-
     @GetMapping("/excluir/{id}")
-    public String excluir(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            Consulta consulta = consultaRepository.findByIdWithPacienteAndMedico(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Consulta não encontrada"));
-
-            Long pacienteId = consulta.getPaciente().getId();
-            consultaRepository.delete(consulta);
-
-            redirectAttributes.addFlashAttribute("success", "Consulta excluída com sucesso");
-            return "redirect:/pacientes/consultas/" + pacienteId;
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erro ao excluir consulta: " + e.getMessage());
-            return "redirect:/consultas";
-        }
+    public String excluir(@PathVariable Long id, RedirectAttributes redirect) {
+        Consulta consulta = consultaRepository.findById(id).orElseThrow();
+        consultaRepository.delete(consulta);
+        redirect.addFlashAttribute("success", "Consulta excluída com sucesso");
+        return "redirect:/consultas";
+    }
+    @GetMapping("/{id}/consultas")
+    public String consultasPorPaciente(@PathVariable Long id, Model model) {
+        Paciente paciente = pacienteRepository.findById(id).orElseThrow();
+        model.addAttribute("paciente", paciente);
+        model.addAttribute("consultas", consultaRepository.findByPacienteId(id));
+        return "paciente/consulta";
     }
 }

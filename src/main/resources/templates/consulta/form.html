@@ -1,57 +1,55 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Agendar Consulta</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="/css/style.css" rel="stylesheet">
+  <title th:text="${consulta.id != null} ? 'Editar Consulta' : 'Nova Consulta'"></title>
 </head>
-<body class="bg-light">
 
-<div class="overlay"></div>
-
-<div class="container mt-4">
+<main>
   <div class="card shadow">
     <div class="card-header bg-info text-white">
-      <h2 class="h4"><i class="bi bi-calendar-plus"></i> Agendar Nova Consulta</h2>
+      <h2 th:text="${consulta.id != null} ? 'Editar Consulta' : 'Nova Consulta'"></h2>
     </div>
     <div class="card-body">
-      <form th:action="@{/consultas/salvar}" th:object="${consulta}" method="post">
+      <form th:action="@{/consultas/} + (${consulta.id != null} ? 'atualizar/' + ${consulta.id} : 'salvar')"
+            th:object="${consulta}" method="post">
+
+        <input type="hidden" th:field="*{id}">
+
         <div class="row mb-3">
           <div class="col-md-6">
             <label class="form-label">Paciente</label>
-            <select class="form-select" name="pacienteId" required>
+            <select class="form-select" th:field="*{paciente.id}" required>
               <option value="">Selecione um paciente</option>
-              <option th:each="paciente : ${pacientes}"
-                      th:value="${paciente.id}"
-                      th:text="${paciente.nome}"></option>
+              <option th:each="p : ${pacientes}"
+                      th:value="${p.id}"
+                      th:text="${p.nome}"></option>
             </select>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('paciente')}" th:errors="*{paciente}"></div>
           </div>
           <div class="col-md-6">
             <label class="form-label">Médico</label>
-            <select class="form-select" name="medicoId" required>
+            <select class="form-select" th:field="*{medico.id}" required>
               <option value="">Selecione um médico</option>
-              <option th:each="medico : ${medicos}"
-                      th:value="${medico.id}"
-                      th:text="${medico.nome}"></option>
+              <option th:each="m : ${medicos}"
+                      th:value="${m.id}"
+                      th:text="${m.nome}"></option>
             </select>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('medico')}" th:errors="*{medico}"></div>
           </div>
         </div>
 
         <div class="row mb-3">
           <div class="col-md-6">
             <label class="form-label">Data e Hora</label>
-            <input type="datetime-local" class="form-control" th:field="*{data}" required />
-            <div class="mt-2">
-              <span th:if="*{data} != null" th:text="${#temporals.format(consulta.data, 'dd/MM/yyyy HH:mm')}"></span>
-              <span th:if="*{data} == null" class="text-muted">Sem data</span>
-            </div>
+            <input type="datetime-local" class="form-control" th:field="*{data}" required>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('data')}" th:errors="*{data}"></div>
           </div>
-
           <div class="col-md-6">
             <label class="form-label">Valor (R$)</label>
-            <input type="number" step="0.01" min="0" class="form-control" th:field="*{valor}" required />
+            <input type="number" step="0.01" min="0" class="form-control" th:field="*{valor}" required>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('valor')}" th:errors="*{valor}"></div>
           </div>
         </div>
 
@@ -60,25 +58,13 @@
           <textarea class="form-control" th:field="*{observacao}" rows="3"></textarea>
         </div>
 
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-          <a th:href="@{/consultas}" class="btn btn-secondary me-md-2">
-            <i class="bi bi-x-circle"></i> Cancelar
-          </a>
-
+        <div class="d-flex justify-content-end gap-2">
+          <a th:href="@{/consultas}" class="btn btn-secondary">Cancelar</a>
           <button type="submit" class="btn btn-primary">
-            <i class="bi bi-save"></i> Agendar Consulta
+            <span th:text="${consulta.id != null} ? 'Atualizar' : 'Salvar'"></span>
           </button>
         </div>
-
-        <!-- Link para voltar -->
-        <a th:href="@{/consultas}" class="btn btn-secondary">
-          <i class="bi bi-arrow-left-circle"></i> Voltar
-        </a>
       </form>
     </div>
   </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</main>

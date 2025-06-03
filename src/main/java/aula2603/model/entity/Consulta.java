@@ -14,7 +14,7 @@ public class Consulta {
     private String observacao;
 
     @ManyToOne
-    @JoinColumn(name = "paciente_id") // Este nome é importante
+    @JoinColumn(name = "paciente_id")
     private Paciente paciente;
 
     @ManyToOne

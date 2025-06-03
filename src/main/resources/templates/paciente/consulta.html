@@ -1,90 +1,67 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Consultas do Paciente</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="/css/style.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+<!-- Refatorado: Removemos <head> e <body> internos. -->
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(pageTitle=\'Consultas - \' + ${paciente.nome}, content=~{::content}, headContent=~{::headContent})}">
 
-<div class="overlay"></div>
+<!-- Conteúdo específico para o <head> desta página -->
+<th:block th:fragment="headContent">
+    <!-- Bootstrap Icons já está no layout.html -->
+</th:block>
 
-<div class="container mt-4">
+<!-- Conteúdo principal (main) desta página -->
+<div th:fragment="content">
     <div class="card shadow">
         <div class="card-header bg-primary text-white">
-            <h2 class="h4"><i class="bi bi-calendar-heart"></i> Consultas de <span th:text="${paciente.nome}"></span></h2>
+            <h1 class="h4" th:text="\'Consultas de \' + ${paciente.nome}"></h1>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-dark">
-                    <tr>
-                        <th>Data/Hora</th>
-                        <th>Médico</th>
-                        <th>Valor</th>
-                        <th>Observações</th>
-                        <th class="text-end">Ações</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:if="${consultas.empty}">
-                        <td colspan="5" class="text-center text-muted">Nenhuma consulta agendada para este paciente</td>
-                    </tr>
-                    <tr th:each="consulta : ${consultas}" th:unless="${consultas.empty}">
-                        <td th:text="${#temporals.format(consulta.data, 'dd/MM/yyyy HH:mm')}"></td>
-                        <td th:text="${consulta.medico.nome}"></td>
-                        <td>
-                            <span th:if="${consulta.valor != null}"
-                                  th:text="'R$ ' + ${#numbers.formatDecimal(consulta.valor, 1, 2)}"></span>
-                            <span th:if="${consulta.valor == null}" class="text-muted">--</span>
-                        </td>
-                        <td>
-                            <span th:if="${consulta.observacao != null and !consulta.observacao.isEmpty()}"
-                                  th:text="${consulta.observacao}"></span>
-                            <span th:if="${consulta.observacao == null or consulta.observacao.isEmpty()}">
-                                <div class="alert alert-warning" role="alert">
-                                    Nenhuma observação disponível
-                                </div>
-                            </span>
-                            <!-- Exibição especial de observações, exemplo do caso específico do remédio -->
-                            <span th:if="${consulta.observacao != null and consulta.observacao.contains('Pirosentamol')}">
-                                <div class="alert alert-info" role="alert">
-                                    Observação importante: A paciente está sendo tratada com Pirosentamol para problemas neurocerebrais.
-                                </div>
-                            </span>
-                        </td>
-                        <td class="text-end">
-                            <div class="btn-group" role="group">
-                                <a th:href="@{/consultas/editar/{id}(id=${consulta.id})}"
-                                   class="btn btn-sm btn-warning">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </a>
-                                <a th:href="@{/consultas/excluir/{id}(id=${consulta.id})}"
-                                   class="btn btn-sm btn-danger"
-                                   onclick="return confirm('Tem certeza que deseja excluir esta consulta?')">
-                                    <i class="bi bi-trash"></i> Excluir
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Médico</th>
+                    <th>Valor</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${consultas}">
+                    <td th:text="${#temporals.format(c.data, \'dd/MM/yyyy HH:mm\')}"></td>
+                    <td th:text="${c.medico.nome}"></td>
+                    <td th:text="${c.valor != null} ? \'R$ \' + ${#numbers.formatDecimal(c.valor, 1, 2)} : \'-\'"></td>
+                    <td class="text-end">
+                        <div class="btn-group" role="group">
+                            <a th:href="@{\'/consultas/editar/\' + ${c.id}}"
+                               class="btn btn-sm btn-warning"
+                               title="Editar consulta">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a th:href="@{\'/consultas/excluir/\' + ${c.id}}"
+                               class="btn btn-sm btn-danger"
+                               title="Excluir consulta"
+                               onclick="return confirm(\'Tem certeza que deseja excluir esta consulta?\')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
 
             <div class="mt-3 d-flex justify-content-between">
-                <a th:href="@{/consultas/nova/{pacienteId}(pacienteId=${paciente.id})}"
-                   class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Agendar Nova Consulta
-                </a>
                 <a th:href="@{/pacientes}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Voltar para Pacientes
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+                <a th:href="@{\'/consultas/nova?pacienteId=\' + ${paciente.id}}"
+                   class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Nova Consulta
                 </a>
             </div>
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+
+<!-- Scripts específicos (se houver) -->
+<!-- <th:block th:fragment="scripts">...</th:block> -->
+
 </html>

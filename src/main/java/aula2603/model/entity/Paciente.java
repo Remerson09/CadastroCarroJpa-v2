@@ -1,40 +1,70 @@
 package aula2603.model.entity;
 
-import aula2603.model.entity.Consulta;
 import jakarta.persistence.*;
-
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entidade Paciente, agora herdando de Pessoa.
+ * Mantém atributos específicos como telefone e CPF, e a relação com Consultas.
+ * Utiliza a estratégia JOINED, mapeando para a tabela 'pacientes'.
+ */
 @Entity
-public class Paciente {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(insertable = false, updatable = false)
-    private Long id;
+@Table(name = "pacientes") // Nome da tabela específica para Paciente
+@PrimaryKeyJoinColumn(name = "pessoa_id") // Coluna FK que também é PK, referenciando pessoas.id
+public class Paciente extends Pessoa {
 
-    @Column(nullable = false, unique = true)  // Adicione unique=true se necessário
-    private String nome;
+    // id e nome são herdados de Pessoa
 
+    @Column(name = "telefone")
     private String telefone;
 
+    @Column(name = "cpf", unique = true) // Adicionado CPF, marcado como único (ajuste se necessário)
+    private String cpf;
 
-    @OneToMany(mappedBy = "paciente")
+    // A relação OneToMany com Consulta permanece
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.REMOVE)
     private List<Consulta> consultas;
-    // Getter e Setter consistentes para version
-    // Restante dos getters e setters permanece igual
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-    public String getTelefone() { return telefone; }
-    public void setTelefone(String telefone) { this.telefone = telefone; }
-    public List<Consulta> getConsultas() { return consultas; }
-    public void setConsultas(List<Consulta> consultas) { this.consultas = consultas; }
 
-    // Métodos auxiliares permanecem iguais
+    // Construtor padrão
+    public Paciente() {
+        super();
+    }
+
+    // Construtor com parâmetros (incluindo o nome da superclasse e CPF)
+    public Paciente(String nome, String telefone, String cpf) {
+        super(nome); // Chama o construtor da superclasse
+        this.telefone = telefone;
+        this.cpf = cpf;
+    }
+
+    // Getters e Setters para atributos específicos
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+
+    public List<Consulta> getConsultas() {
+        return consultas;
+    }
+
+    public void setConsultas(List<Consulta> consultas) {
+        this.consultas = consultas;
+    }
+
+    // Métodos auxiliares podem usar getters herdados e específicos
     public String dados() {
-        return "Paciente: " + nome + " | Telefone: " + telefone;
+        return "Paciente: " + getNome() + " | Telefone: " + telefone + " | CPF: " + cpf;
     }
 
     public String consultas() {
@@ -46,4 +76,16 @@ public class Paciente {
         }
         return sb.toString();
     }
+
+    // Sobrescrever toString() para incluir atributos herdados e específicos
+    @Override
+    public String toString() {
+        return "Paciente{" +
+                "id=" + getId() +
+                ", nome=\'" + getNome() + "\'" +
+                ", telefone=\'" + telefone + "\'" +
+                ", cpf=\'" + cpf + "\'" +
+                '}';
+    }
 }
+

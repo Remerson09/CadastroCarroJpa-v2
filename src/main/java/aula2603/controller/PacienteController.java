@@ -110,7 +110,7 @@ public class PacienteController {
         return "redirect:/pacientes";
     }
 
-    @GetMapping("/consultas/{id}")
+    @GetMapping("/{id}/consultas")
     public String consultasPaciente(@PathVariable Long id, Model model) {
         Paciente paciente = pacienteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Paciente não encontrado"));
