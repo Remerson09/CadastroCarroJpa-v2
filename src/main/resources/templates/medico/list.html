@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lista de Médicos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-light">
+
+<div class="overlay"></div>
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h1 class="h4">Médicos</h1>
+        </div>
+        <div class="card-body">
+            <a th:href="@{/medicos/novo}" class="btn btn-success mb-3">Novo Médico</a>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>CRM</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="medico : ${medicos}">
+                        <td th:text="${medico.id}"></td>
+                        <td th:text="${medico.nome}"></td>
+                        <td th:text="${medico.crm}"></td>
+                        <td>
+                            <a th:href="@{/medicos/editar/{id}(id=${medico.id})}" class="btn btn-sm btn-primary">Editar</a>
+                            <a th:href="@{/medicos/excluir/{id}(id=${medico.id})}" class="btn btn-sm btn-danger">Excluir</a>
+                            <a th:href="@{/medicos/consultas/{id}(id=${medico.id})}" class="btn btn-sm btn-info">Consultas</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <a th:href="@{/}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
